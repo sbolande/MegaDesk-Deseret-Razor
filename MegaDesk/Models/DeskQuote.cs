@@ -67,6 +67,70 @@ namespace MegaDesk.Models
         [Range(0, double.MaxValue)]
         [Editable(false, AllowInitialValue = false)]
         public decimal Value { get; private set; } // private set, use CalculateQuote() to set this.Value
+
+        public decimal CalculateQuote()
+        {
+            decimal size = (Width * Depth);
+            decimal basePrice = 200 + size + (50 * DrawerCount) + GetDesktopMaterialPrice();
+            decimal rushPrice = GetRushPrice(size);
+            Value = basePrice + rushPrice;
+            return Value;
+        }
+
+        private decimal GetDesktopMaterialPrice()
+        {
+            switch (DesktopMaterial)
+            {
+                case DesktopMaterial.Laminate: return 100;
+                case DesktopMaterial.Oak: return 200;
+                case DesktopMaterial.Rosewood: return 300;
+                case DesktopMaterial.Veneer: return 125;
+                case DesktopMaterial.Pine: return 50;
+                default: return 0;
+            }
+        }
+
+        private decimal GetRushPrice(decimal size)
+        {
+            int DayPosition;
+            int SizePosition;
+
+            if (ProductionDays < 14) DayPosition = DefineRushDayPosition(ProductionDays);
+            else { return 0; }
+
+            SizePosition = DefineRushSizePosition(size);
+
+            return GetRushOrder(DayPosition, SizePosition);
+        }
+
+        private int DefineRushDayPosition(int productionDays)
+        {
+            switch (productionDays)
+            {
+                case 3:
+                    return 0;
+                case 5:
+                    return 1;
+                case 7:
+                    return 2;
+                default:
+                    return 0;
+            }
+        }
+
+        private int DefineRushSizePosition(decimal productionSize)
+        {
+            if (productionSize < 1000) return 0;
+            else if (productionSize > 1000 && productionSize < 2000) return 1;
+            else return 2;
+        }
+
+        private int GetRushOrder(int Day, int Size)
+        {
+            int[,] PriceByDays = new int[,] { { 60, 70, 80 }, { 40, 50, 60 }, { 30, 35, 40 } };
+
+            return PriceByDays[Day, Size];
+        }
     }
 
     public enum DesktopMaterial
