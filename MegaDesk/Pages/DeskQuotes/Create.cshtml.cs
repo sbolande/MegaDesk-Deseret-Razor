@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MegaDesk.Data;
 using MegaDesk.Models;
+using MegaDesk.Models.Helpers;
 
 namespace MegaDesk.Pages.DeskQuotes
 {
@@ -20,13 +21,17 @@ namespace MegaDesk.Pages.DeskQuotes
             _context = context;
         }
 
+        public SelectList Materials { get; set; }
+
         public IActionResult OnGet()
         {
+            Materials = new SelectList(Enum.GetNames(typeof(DesktopMaterial)));
             return Page();
         }
 
         [BindProperty]
         public DeskQuote DeskQuote { get; set; }
+
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
@@ -36,6 +41,7 @@ namespace MegaDesk.Pages.DeskQuotes
                 return Page();
             }
 
+            DeskQuote.Value = QuoteHelper.CalculateQuote(DeskQuote);
             _context.DeskQuote.Add(DeskQuote);
             await _context.SaveChangesAsync();
 
