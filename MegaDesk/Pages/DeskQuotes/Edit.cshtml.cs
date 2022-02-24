@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MegaDesk.Data;
 using MegaDesk.Models;
+using MegaDesk.Models.Helpers;
 
 namespace MegaDesk.Pages.DeskQuotes
 {
@@ -21,6 +22,8 @@ namespace MegaDesk.Pages.DeskQuotes
             _context = context;
         }
 
+        public SelectList Materials { get; set; }
+
         [BindProperty]
         public DeskQuote DeskQuote { get; set; }
 
@@ -30,6 +33,7 @@ namespace MegaDesk.Pages.DeskQuotes
             {
                 return NotFound();
             }
+            Materials = new SelectList(Enum.GetNames(typeof(DesktopMaterial)));
 
             DeskQuote = await _context.DeskQuote.FirstOrDefaultAsync(m => m.ID == id);
 
@@ -49,6 +53,7 @@ namespace MegaDesk.Pages.DeskQuotes
                 return Page();
             }
 
+            DeskQuote.Value = QuoteHelper.CalculateQuote(DeskQuote);
             _context.Attach(DeskQuote).State = EntityState.Modified;
 
             try
